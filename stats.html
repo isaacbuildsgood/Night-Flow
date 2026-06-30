@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics - NightFlow</title>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        /* ALL CSS GOES HERE */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --bg-color: #0B0F1A;
+            --card-bg: rgba(18, 24, 38, 0.65);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --accent: #22C55E;
+            --text-primary: #E5E7EB;
+            --text-sub: #9CA3AF;
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --font-main: 'Poppins', sans-serif;
+        }
+
+        [data-theme="indigo"] { --primary: #4F46E5; --primary-hover: #4338CA; --accent: #22C55E; }
+        [data-theme="rose"] { --primary: #E11D48; --primary-hover: #BE123C; --accent: #FB7185; }
+        [data-theme="emerald"] { --primary: #10B981; --primary-hover: #059669; --accent: #34D399; }
+        [data-theme="amber"] { --primary: #F59E0B; --primary-hover: #D97706; --accent: #FBBF24; }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            background: radial-gradient(circle at 50% 120%, #1e1b4b 0%, #0B0F1A 70%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+        }
+
+        .wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            padding: 1rem;
+            z-index: 10;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 2.5rem 2.5rem 3rem 2.5rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-sub);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 2rem;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: var(--text-primary);
+            transform: translateX(-3px);
+        }
+        
+        .back-link ion-icon {
+            font-size: 1.2rem;
+        }
+
+        .app-header .title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .app-header .subtitle {
+            color: var(--text-sub);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .stats-grid {
+            margin-bottom: 2rem;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+        }
+
+        .stat-label {
+            color: var(--text-sub);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .streak-stat {
+            margin-top: 1rem;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+            padding: 1rem;
+            border-radius: 16px;
+            display: none; /* Shown via JS */
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            animation: pulse-red 2s infinite;
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .streak-stat .streak-val {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #ef4444;
+        }
+        .streak-stat .streak-label {
+            color: #ef4444;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .section-title {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .stats-history-list {
+            list-style: none;
+            max-height: 220px;
+            overflow-y: auto;
+            padding-right: 5px;
+            margin-bottom: 2rem;
+        }
+
+        .stats-history-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-sub);
+            font-size: 0.95rem;
+        }
+
+        .stats-history-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .history-date {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .history-date ion-icon {
+            color: var(--primary);
+            opacity: 0.7;
+        }
+
+        .history-mins {
+            color: var(--text-primary);
+            font-weight: 600;
+            background: rgba(255,255,255,0.05);
+            padding: 4px 10px;
+            border-radius: 8px;
+        }
+
+        .stats-history-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .stats-history-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .stats-history-list::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        .btn {
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 500;
+            padding: 14px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .clear-stats-btn {
+            background: rgba(220, 38, 38, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+
+        .clear-stats-btn:hover {
+            background: rgba(220, 38, 38, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 38, 38, 0.15);
+        }
+
+        /* Custom Modal (Caution Box) */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 15, 26, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+        .modal-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        .modal-message {
+            color: var(--text-sub);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            flex: 1;
+        }
+        .modal-btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .modal-btn-primary:hover {
+            background: var(--primary-hover);
+        }
+        .modal-btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 1px solid var(--input-border);
+        }
+        .modal-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        @media screen and (max-width: 480px) {
+            .card {
+                padding: 2rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <main class="card">
+            <a href="index.html" class="back-link">
+                <ion-icon name="arrow-back-outline"></ion-icon>
+                Back to Timer
+            </a>
+            
+            <header class="app-header">
+                <h1 class="title">Your Statistics</h1>
+                <p class="subtitle">Track your focus over time.</p>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-value" id="totalMinsValue">0</div>
+                    <div class="stat-label">Total Minutes Studied</div>
+                </div>
+
+                <div class="streak-stat" id="streakStat">
+                    <span class="streak-val" id="streakValue">0</span>
+                    <span class="streak-label">Day Streak 🔥</span>
+                </div>
+            </div>
+
+            <div class="stats-history">
+                <h3 class="section-title">Session History</h3>
+                <ul class="stats-history-list" id="historyList">
+                    <!-- Dynamic history populates here -->
+                    <li style="justify-content: center;">Loading data...</li>
+                </ul>
+            </div>
+
+            <button class="btn clear-stats-btn" id="clearStatsBtn">
+                <ion-icon name="trash-outline"></ion-icon>
+                Reset All Statistics
+            </button>
+        </main>
+    </div>
+
+    <!-- Custom Modal -->
+    <div id="customModal" class="modal-overlay">
+        <div class="modal-card">
+            <ion-icon name="information-circle-outline" class="modal-icon" id="modalIcon"></ion-icon>
+            <h3 class="modal-title" id="modalTitle">Notice</h3>
+            <p class="modal-message" id="modalMessage">Message.</p>
+            <div class="modal-actions">
+                <button id="modalBtnCancel" class="btn modal-btn modal-btn-secondary" style="display: none;">Cancel</button>
+                <button id="modalBtnConfirm" class="btn modal-btn modal-btn-primary">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const totalMinsValue = document.getElementById('totalMinsValue');
+            const historyList = document.getElementById('historyList');
+            const clearStatsBtn = document.getElementById('clearStatsBtn');
+            const streakStat = document.getElementById('streakStat');
+            const streakValue = document.getElementById('streakValue');
+
+            function initStats() {
+                loadTheme();
+                loadStats();
+            }
+
+            function renderEmpty() {
+                historyList.innerHTML = "<li style='justify-content:center;'>No study data available yet. Start a session!</li>";
+                animateValue(totalMinsValue, parseInt(totalMinsValue.textContent), 0, 500);
+                streakStat.style.display = 'none';
+            }
+
+            function renderHistory(history) {
+                if (Object.keys(history).length > 0) {
+                    const days = Object.keys(history).sort((a,b) => new Date(b) - new Date(a)); // Newest first
+                    
+                    historyList.innerHTML = "";
+                    days.forEach(day => {
+                        const mins = history[day];
+                        
+                        // Parse date to be more friendly if needed
+                        const dateObj = new Date(day);
+                        const displayDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                        
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <span class="history-date"><ion-icon name="calendar-outline"></ion-icon> ${displayDate}</span>
+                            <span class="history-mins">${mins} min</span>
+                        `;
+                        historyList.appendChild(li);
+                    });
+                } else {
+                    historyList.innerHTML = "<li style='justify-content:center;'>No study data available yet. Start a session!</li>";
+                }
+            }
+
+            function loadStats() {
+                const statsStr = localStorage.getItem('nightFlowStats');
+                if (!statsStr) {
+                    renderEmpty();
+                    return;
+                }
+
+                try {
+                    const stats = JSON.parse(statsStr);
+                    const history = stats.history || {};
+                    
+                    // Calculate Total
+                    let total = 0;
+                    Object.values(history).forEach(m => total += m);
+                    animateValue(totalMinsValue, parseInt(totalMinsValue.textContent), total, 1000);
+
+                    // Render History
+                    renderHistory(history);
+                    
+                    // Calculate Streak
+                    loadStreak(history);
+                } catch (e) {
+                    console.error("Error loading stats", e);
+                    historyList.innerHTML = "<li style='justify-content:center; color:#ef4444;'>Error loading statistics</li>";
+                }
+            }
+
+            function loadStreak(history) {
+                const dates = Object.keys(history).sort((a,b) => new Date(b) - new Date(a)); // Sort descending
+                if (dates.length === 0) {
+                    streakStat.style.display = 'none';
+                    return;
+                }
+                
+                let streak = 0;
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                
+                let checkDate = new Date(dates[0]);
+                checkDate.setHours(0,0,0,0);
+                
+                const diffTime = Math.abs(today.getTime() - checkDate.getTime());
+                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)); // Use round for exact day difference
+                
+                if (diffDays > 1) { // If the most recent session wasn't yesterday or today
+                    streak = 0;
+                } else {
+                    streak = 1; // Start streak with 1 if today or yesterday
+                    for (let i = 1; i < dates.length; i++) {
+                        const prevDate = new Date(dates[i]);
+                        prevDate.setHours(0,0,0,0);
+                        const currDate = new Date(dates[i-1]);
+                        currDate.setHours(0,0,0,0);
+                        
+                        const dayDiff = (currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
+                        if (dayDiff === 1) { // If consecutive day
+                            streak++;
+                        } else if (dayDiff === 0) { // Same day, don't break streak, don't increment
+                            continue;
+                        } else { // Gap in days
+                            break;
+                        }
+                    }
+                }
+                
+                if (streak > 0) {
+                    streakStat.style.display = 'flex';
+                    streakValue.textContent = streak;
+                } else {
+                    streakStat.style.display = 'none';
+                }
+            }
+
+            function loadTheme() {
+                const theme = JSON.parse(localStorage.getItem('nightFlowTheme'));
+                if (theme) {
+                    document.documentElement.style.setProperty('--primary', theme.primary);
+                    document.documentElement.style.setProperty('--accent', theme.accent);
+                }
+            }
+
+            // Number animation effect
+            function animateValue(obj, start, end, duration) {
+                if (start === end) {
+                    obj.textContent = end;
+                    return;
+                }
+                
+                let startTimestamp = null;
+                const step = (timestamp) => {
+                    if (!startTimestamp) startTimestamp = timestamp;
+                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                    // easeOutQuart
+                    const easeProgress = 1 - Math.pow(1 - progress, 4);
+                    obj.textContent = Math.floor(easeProgress * (end - start) + start);
+                    if (progress < 1) {
+                        window.requestAnimationFrame(step);
+                    } else {
+                        obj.textContent = end;
+                    }
+                };
+                window.requestAnimationFrame(step);
+            }
+
+           // Override native window confirm for clear stats
+            clearStatsBtn.addEventListener('click', () => {
+                showModal("Are you sure you want to clear all your study history? This cannot be undone.", "Reset Progress?", "confirm", (confirmed) => {
+                    if (confirmed) {
+                        localStorage.removeItem('nightFlowStats');
+                        loadStats();
+                        // Streak should hide
+                        streakStat.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Custom Caution Box Modal
+            const customModal = document.getElementById('customModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            const modalBtnConfirm = document.getElementById('modalBtnConfirm');
+            const modalBtnCancel = document.getElementById('modalBtnCancel');
+            const modalIcon = document.getElementById('modalIcon');
+            let modalCallback = null;
+
+            function showModal(message, title = "Notice", type = "alert", callback = null) {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                modalCallback = callback;
+                
+                if (type === "confirm") {
+                    modalBtnCancel.style.display = "block";
+                    modalIcon.setAttribute('name', 'warning-outline');
+                    modalIcon.style.color = '#ef4444';
+                } else {
+                    modalBtnCancel.style.display = "none";
+                    modalIcon.setAttribute('name', 'information-circle-outline');
+                    modalIcon.style.color = 'var(--primary)';
+                }
+                
+                customModal.classList.add('active');
+            }
+
+            function closeModal() {
+                customModal.classList.remove('active');
+                modalCallback = null;
+            }
+
+            modalBtnConfirm.addEventListener('click', () => {
+                if (modalCallback) modalCallback(true);
+                closeModal();
+            });
+
+            modalBtnCancel.addEventListener('click', () => {
+                if (modalCallback) modalCallback(false);
+                closeModal();
+            });
+
+            // Override native window alert
+            window.alert = function(msg) {
+                showModal(msg, "NightFlow Notice", "alert");
+            };
+        });
+    </script>
+</body>
+</html>

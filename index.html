@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NightFlow - Night Study Planner</title>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        /* ALL CSS GOES HERE */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --bg-color: #0B0F1A;
+            --card-bg: rgba(18, 24, 38, 0.65);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --accent: #22C55E;
+            --text-primary: #E5E7EB;
+            --text-sub: #9CA3AF;
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --input-border: rgba(255, 255, 255, 0.1);
+            --font-main: 'Poppins', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            background: radial-gradient(circle at 50% 120%, #1e1b4b 0%, #0B0F1A 70%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            overflow: hidden;
+        }
+
+        .wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 520px;
+            padding: 1rem;
+            z-index: 10;
+        }
+
+        /* Top Navigation / Controls */
+        .top-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .brand {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-sub);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .streak-badge {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            display: none; /* Shown via JS */
+            align-items: center;
+            gap: 4px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            color: var(--text-sub);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            font-size: 1.3rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            outline: none;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+        }
+
+        /* Sound Dropdown */
+        .sound-menu-container {
+            position: relative;
+        }
+        .sound-dropdown {
+            position: absolute;
+            top: 55px;
+            right: 0;
+            background: rgba(18, 24, 38, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 8px;
+            width: 170px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+        }
+        .sound-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .sound-option {
+            padding: 10px 14px;
+            border-radius: 10px;
+            color: var(--text-sub);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sound-option:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+        .sound-option.active {
+            background: rgba(79, 70, 229, 0.15);
+            color: var(--primary);
+        }
+
+        /* Theme Selector */
+        .color-themes {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            padding: 8px;
+            margin-top: 4px;
+            border-top: 1px solid var(--card-border);
+        }
+        .theme-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s;
+        }
+        .theme-dot:hover { transform: scale(1.2); }
+        .theme-dot.active { border-color: white; }
+        .theme-indigo { background: #4F46E5; }
+        .theme-rose { background: #E11D48; }
+        .theme-emerald { background: #10B981; }
+        .theme-amber { background: #F59E0B; }
+
+        /* Main Focus Card */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            animation: float 8s ease-in-out infinite, fadeIn 0.4s ease-out;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Subtle glow inside card */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* Header Text */
+        .app-header .title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .app-header .subtitle {
+            color: var(--text-sub);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Focus Task Input */
+        .focus-task-container {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+        .focus-task-input {
+            background: transparent;
+            border: none;
+            border-bottom: 1.5px solid var(--card-border);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1.1rem;
+            text-align: center;
+            width: 100%;
+            max-width: 300px;
+            padding: 8px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .focus-task-input:focus {
+            border-bottom-color: var(--primary);
+        }
+        .focus-task-input::placeholder {
+            color: var(--text-sub);
+            font-style: italic;
+            opacity: 0.6;
+        }
+
+        /* Timer Display */
+        .timer-display {
+            font-size: 4.5rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            line-height: 1;
+            margin-bottom: 1rem;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 0 30px rgba(79, 70, 229, 0.4);
+            transition: color 0.3s ease;
+        }
+        
+        /* Presets */
+        .presets-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .preset-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--input-border);
+            color: var(--text-sub);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .preset-btn:hover, .preset-btn.active {
+            background: rgba(79, 70, 229, 0.15);
+            color: var(--text-primary);
+            border-color: var(--primary);
+        }
+
+        /* Input Styles */
+        .input-wrapper {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+        .duration-input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .duration-input-group label {
+            font-size: 0.7rem;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        input[type="number"] {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 12px;
+            padding: 12px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1.2rem;
+            width: 80px;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input[type="number"]::placeholder {
+            color: var(--text-sub);
+            font-size: 1rem;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(79, 70, 229, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .input-separator {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--card-border);
+            margin-top: 18px;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        /* Button Styles */
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .btn {
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 500;
+            padding: 12px 28px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            outline: none;
+        }
+
+        .primary-btn {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+            flex: 1;
+            max-width: 140px;
+        }
+
+        .primary-btn:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.5);
+        }
+
+        .primary-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .secondary-btn {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--input-border);
+            color: var(--text-primary);
+            padding: 12px 20px;
+        }
+
+        .secondary-btn:hover:not(:disabled) {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Progress Section */
+        .progress-section {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background-color: var(--accent);
+            border-radius: 3px;
+            transition: width 0.3s linear;
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
+        }
+
+        .progress-text {
+            font-size: 0.9rem;
+            color: var(--text-sub);
+        }
+
+        .highlight {
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 1.05rem;
+            display: inline-block;
+        }
+
+        /* Quotes Section */
+        .quote-section {
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .quote-text {
+            font-style: italic;
+            color: var(--text-sub);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .quote-text.fade {
+            opacity: 0;
+            transform: translateY(5px);
+        }
+
+        /* Custom Modal (Caution Box) */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 15, 26, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+        .modal-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        .modal-message {
+            color: var(--text-sub);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            flex: 1;
+        }
+        .modal-btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .modal-btn-primary:hover {
+            background: var(--primary-hover);
+        }
+        .modal-btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 1px solid var(--input-border);
+        }
+        .modal-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        @media screen and (max-width: 480px) {
+            .card {
+                padding: 2.5rem 1.5rem;
+            }
+            .timer-display {
+                font-size: 3.5rem;
+            }
+            .timer-controls {
+                gap: 0.5rem;
+            }
+            .btn {
+                padding: 12px 18px;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="top-controls">
+            <div class="brand">
+                NightFlow
+                <span class="streak-badge" id="streakBadge">🔥 <span id="streakCount">0</span> Day Streak</span>
+            </div>
+            <div class="nav-actions">
+                <div class="sound-menu-container">
+                    <button id="soundToggleBtn" class="icon-btn" title="Focus Sounds">
+                        <ion-icon name="volume-mute-outline" id="soundIcon"></ion-icon>
+                    </button>
+                    <div class="sound-dropdown" id="soundDropdown">
+                        <div class="sound-option active" data-src="none">
+                            <ion-icon name="volume-mute-outline"></ion-icon> Silent
+                        </div>
+                        <div class="sound-option" data-src="https://assets.mixkit.co/active_storage/sfx/2852/2852-preview.mp3">
+                            <ion-icon name="rainy-outline"></ion-icon> Lofi Rain
+                        </div>
+                        <div class="sound-option" data-src="https://assets.mixkit.co/active_storage/sfx/2573/2573-preview.mp3">
+                            <ion-icon name="bonfire-outline"></ion-icon> Fireplace
+                        </div>
+                        <div class="sound-option" data-src="https://assets.mixkit.co/active_storage/sfx/2157/2157-preview.mp3">
+                            <ion-icon name="moon-outline"></ion-icon> Night Crickets
+                        </div>
+                        <div class="color-themes">
+                            <div class="theme-dot theme-indigo active" data-primary="#4F46E5" data-accent="#22C55E"></div>
+                            <div class="theme-dot theme-rose" data-primary="#E11D48" data-accent="#FB7185"></div>
+                            <div class="theme-dot theme-emerald" data-primary="#10B981" data-accent="#34D399"></div>
+                            <div class="theme-dot theme-amber" data-primary="#F59E0B" data-accent="#FBBF24"></div>
+                        </div>
+                    </div>
+                </div>
+                <a href="stats.html" class="icon-btn" title="Study Statistics">
+                    <ion-icon name="stats-chart-outline"></ion-icon>
+                </a>
+            </div>
+        </div>
+
+        <main class="card">
+            <header class="app-header">
+                <h1 class="title">NightFlow</h1>
+                <p class="subtitle">Stay focused. Study smarter at night.</p>
+            </header>
+
+            <div class="focus-task-container">
+                <input type="text" id="focusGoal" class="focus-task-input" placeholder="What are you studying right now?">
+            </div>
+
+            <section class="timer-section">
+                <div class="timer-display" id="timerDisplay">00:00:00</div>
+                <div class="presets-wrapper" id="presetsWrapper">
+                    <button class="preset-btn" data-time="25">25m Focus</button>
+                    <button class="preset-btn" data-time="5">5m Break</button>
+                    <button class="preset-btn" data-time="50">50m Deep</button>
+                </div>
+                <div class="input-wrapper">
+                    <div class="duration-input-group">
+                        <label>Min</label>
+                        <input type="number" id="studyDuration" placeholder="0" min="0" max="999">
+                    </div>
+                    <div class="input-separator">:</div>
+                    <div class="duration-input-group">
+                        <label>Sec</label>
+                        <input type="number" id="studySeconds" placeholder="0" min="0" max="59">
+                    </div>
+                </div>
+                
+                <div class="timer-controls">
+                    <button id="startBtn" class="btn primary-btn">Start</button>
+                    <button id="pauseBtn" class="btn secondary-btn" disabled style="opacity:0.5; cursor:not-allowed;">Pause</button>
+                    <button id="resetBtn" class="btn secondary-btn">Reset</button>
+                </div>
+            </section>
+
+            <section class="progress-section">
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p class="progress-text">You've studied <span id="dailyMinutes" class="highlight">0</span> minutes today</p>
+            </section>
+
+            <section class="quote-section">
+                <p class="quote-text" id="quoteText">"No distractions. Just focus."</p>
+            </section>
+        </main>
+    </div>
+
+    <!-- Custom Modal -->
+    <div id="customModal" class="modal-overlay">
+        <div class="modal-card">
+            <ion-icon name="information-circle-outline" class="modal-icon" id="modalIcon"></ion-icon>
+            <h3 class="modal-title" id="modalTitle">Notice</h3>
+            <p class="modal-message" id="modalMessage">Message.</p>
+            <div class="modal-actions">
+                <button id="modalBtnCancel" class="btn modal-btn modal-btn-secondary" style="display: none;">Cancel</button>
+                <button id="modalBtnConfirm" class="btn modal-btn modal-btn-primary">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="focusAudio" loop preload="none">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2852/2852-preview.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="alarmAudio" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" loop preload="auto"></audio>
+
+    <script>
+        // DOM Elements
+        const timerDisplay = document.getElementById('timerDisplay');
+        const studyDurationInput = document.getElementById('studyDuration');
+        const studySecondsInput = document.getElementById('studySeconds');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const progressFill = document.getElementById('progressFill');
+        const dailyMinutesEl = document.getElementById('dailyMinutes');
+        const quoteText = document.getElementById('quoteText');
+        const soundToggleBtn = document.getElementById('soundToggleBtn');
+        const soundDropdown = document.getElementById('soundDropdown');
+        const soundOptions = document.querySelectorAll('.sound-option');
+        const soundIcon = document.getElementById('soundIcon');
+        const focusAudio = document.getElementById('focusAudio');
+        const alarmAudio = document.getElementById('alarmAudio');
+        const presetBtns = document.querySelectorAll('.preset-btn');
+        const focusGoalInput = document.getElementById('focusGoal');
+        const streakBadge = document.getElementById('streakBadge');
+        const streakCountEl = document.getElementById('streakCount');
+        const themeDots = document.querySelectorAll('.theme-dot');
+
+        // Application State
+        let timerInterval = null;
+        let expectedEndTime = null;
+        let remainingSeconds = 0;
+        let initialSecondsForSession = 0;
+        let isRunning = false;
+        let dailyStudiedMinutes = 0;
+        let isSoundPlaying = false;
+        let lastLoggedMinute = 0; // Tracks which minute we last added to total
+        let shouldAutoTransition = false;
+
+        // Motivational Quotes Array
+        const sessionQuotes = [
+            "Stay locked in.",
+            "Discipline over mood.",
+            "No distractions. Just focus.",
+            "The night is young. Keep pushing.",
+            "Success is built in the dark.",
+            "Breathe. Focus. Execute.",
+            "Commitment is doing what you said long after the mood has left you.",
+            "Your future needs you. Your past doesn't.",
+            "One step at a time. Keep moving."
+        ];
+
+        function initApp() {
+            loadTheme();
+            loadProgress();
+            loadStreak();
+            attachEventListeners();
+            setRandomQuote(false);
+        }
+
+        function attachEventListeners() {
+            startBtn.addEventListener('click', handleStart);
+            pauseBtn.addEventListener('click', handlePause);
+            resetBtn.addEventListener('click', handleReset);
+            
+            // Sound Dropdown logic
+            soundToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                soundDropdown.classList.toggle('active');
+            });
+            
+            // Theme selector logic
+            themeDots.forEach(dot => {
+                dot.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const primary = dot.getAttribute('data-primary');
+                    const accent = dot.getAttribute('data-accent');
+                    applyTheme(primary, accent);
+                    saveTheme(primary, accent);
+                    themeDots.forEach(d => d.classList.remove('active'));
+                    dot.classList.add('active');
+                });
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.sound-menu-container')) {
+                    soundDropdown.classList.remove('active');
+                }
+            });
+
+            soundOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    const src = option.getAttribute('data-src');
+                    
+                    soundOptions.forEach(opt => opt.classList.remove('active'));
+                    option.classList.add('active');
+                    
+                    if (src === 'none') {
+                        focusAudio.pause();
+                        focusAudio.src = "";
+                        soundIcon.setAttribute('name', 'volume-mute-outline');
+                        isSoundPlaying = false;
+                    } else {
+                        focusAudio.src = src;
+                        focusAudio.play().then(() => {
+                            soundIcon.setAttribute('name', 'volume-medium-outline');
+                            isSoundPlaying = true;
+                        }).catch(err => {
+                            console.error("Audio playback failed:", err);
+                            alert("Click anywhere on the page first to enable audio playing.");
+                        });
+                    }
+                    soundDropdown.classList.remove('active');
+                });
+            });
+
+            studyDurationInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleStart();
+            });
+            
+            // Preset Buttons logic
+            presetBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (isRunning) return;
+                    studyDurationInput.value = btn.getAttribute('data-time');
+                    studySecondsInput.value = "0"; // Reset seconds on preset
+                    presetBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+            });
+
+            // Clear Preset Active state if user manually types
+            [studyDurationInput, studySecondsInput].forEach(inp => {
+                inp.addEventListener('input', () => {
+                    presetBtns.forEach(b => b.classList.remove('active'));
+                });
+            });
+            
+            // Handle page visibility for Zen Mode and Timer Drift
+            document.addEventListener('visibilitychange', () => {
+                const now = Math.floor(Date.now() / 1000);
+                
+                if (document.hidden) {
+                    // ZEN MODE logic
+                    if (isRunning) {
+                        handlePause();
+                        showModal("Anti-Distraction Mode Triggered! Please stay focused on your task.", "Stay Locked In!", "alert");
+                    }
+                } else if (isRunning && expectedEndTime) {
+                    remainingSeconds = Math.max(0, expectedEndTime - now);
+                    renderTimerDisplay();
+                    updateProgressBar();
+                    calculateAccumulatedMinutes();
+                    
+                    if (remainingSeconds === 0) {
+                        completeSession();
+                    }
+                }
+            });
+        }
+
+        function handleStart() {
+            if (isRunning) return;
+
+            if (remainingSeconds <= 0) {
+                const min = parseInt(studyDurationInput.value, 10) || 0;
+                const sec = parseInt(studySecondsInput.value, 10) || 0;
+                const totalSec = (min * 60) + sec;
+
+                if (totalSec < 30) {
+                    alert("Minimum focus duration is 30 seconds. Please adjust your timer.");
+                    studyDurationInput.focus();
+                    return;
+                }
+
+                remainingSeconds = totalSec;
+                initialSecondsForSession = remainingSeconds;
+                lastLoggedMinute = 0;
+                setRandomQuote(true);
+                updateProgressBar();
+            }
+            
+            isRunning = true;
+            expectedEndTime = Math.floor(Date.now() / 1000) + remainingSeconds;
+            
+            // Focus Goal UI
+            focusGoalInput.disabled = true;
+            if (focusGoalInput.value.trim().length > 0) {
+                focusGoalInput.style.borderBottomColor = 'var(--accent)';
+            }
+            
+            // UI Updates
+            startBtn.textContent = "Resume";
+            startBtn.disabled = true;
+            startBtn.style.opacity = '0.5';
+            startBtn.style.cursor = 'not-allowed';
+            
+            pauseBtn.disabled = false;
+            pauseBtn.style.opacity = '1';
+            pauseBtn.style.cursor = 'pointer';
+            
+            studyDurationInput.disabled = true;
+            studySecondsInput.disabled = true;
+
+            timerInterval = setInterval(updateTimerTick, 1000);
+        }
+
+        function handlePause() {
+            if (!isRunning) return;
+            
+            clearInterval(timerInterval);
+            isRunning = false;
+            
+            // Recalculate remaining seconds perfectly based on time paused
+            const now = Math.floor(Date.now() / 1000);
+            remainingSeconds = Math.max(0, expectedEndTime - now);
+            expectedEndTime = null;
+            
+            // UI Updates
+            startBtn.disabled = false;
+            startBtn.style.opacity = '1';
+            startBtn.style.cursor = 'pointer';
+            
+            pauseBtn.disabled = true;
+            pauseBtn.style.opacity = '0.5';
+            pauseBtn.style.cursor = 'not-allowed';
+
+            studyDurationInput.disabled = false;
+            studySecondsInput.disabled = false;
+            focusGoalInput.disabled = false;
+        }
+
+        function handleReset() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            expectedEndTime = null;
+            lastLoggedMinute = 0;
+            
+            // Reset UI
+            startBtn.textContent = "Start";
+            startBtn.disabled = false;
+            startBtn.style.opacity = '1';
+            startBtn.style.cursor = 'pointer';
+            
+            pauseBtn.disabled = true;
+            pauseBtn.style.opacity = '0.5';
+            pauseBtn.style.cursor = 'not-allowed';
+            
+            studyDurationInput.disabled = false;
+            studySecondsInput.disabled = false;
+            focusGoalInput.disabled = false;
+            focusGoalInput.style.borderBottomColor = 'var(--card-border)';
+            
+            const min = parseInt(studyDurationInput.value, 10) || 0;
+            const sec = parseInt(studySecondsInput.value, 10) || 0;
+            const totalSec = (min * 60) + sec;
+
+            if (totalSec > 0) {
+                remainingSeconds = totalSec;
+                initialSecondsForSession = remainingSeconds;
+            } else {
+                remainingSeconds = 0;
+                initialSecondsForSession = 0;
+                studyDurationInput.value = '';
+                studySecondsInput.value = '';
+                presetBtns.forEach(b => b.classList.remove('active'));
+            }
+
+            renderTimerDisplay();
+            updateProgressBar();
+        }
+
+        function updateTimerTick() {
+            if (!isRunning) return;
+            
+            const now = Math.floor(Date.now() / 1000);
+            remainingSeconds = expectedEndTime - now;
+            
+            if (remainingSeconds <= 0) {
+                remainingSeconds = 0;
+                completeSession();
+            } else {
+                renderTimerDisplay();
+                updateProgressBar();
+                calculateAccumulatedMinutes();
+            }
+        }
+
+        function calculateAccumulatedMinutes() {
+            if (initialSecondsForSession <= 0) return;
+            
+            const elapsed = initialSecondsForSession - remainingSeconds;
+            const currentMinuteElapsed = Math.floor(elapsed / 60);
+            
+            // If we've crossed a new minute threshold
+            if (currentMinuteElapsed > lastLoggedMinute) {
+                const minutesToAdd = currentMinuteElapsed - lastLoggedMinute;
+                dailyStudiedMinutes += minutesToAdd;
+                lastLoggedMinute = currentMinuteElapsed;
+                saveProgress();
+                renderTotalStudied();
+            }
+        }
+
+        function completeSession() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            expectedEndTime = null;
+            
+            calculateAccumulatedMinutes(); // Ensure final partial minute rounding if needed
+            
+            renderTimerDisplay();
+            updateProgressBar(true);
+            
+            startBtn.textContent = "Start";
+            startBtn.disabled = false;
+            startBtn.style.opacity = '1';
+            startBtn.style.cursor = 'pointer';
+            
+            pauseBtn.disabled = true;
+            pauseBtn.style.opacity = '0.5';
+            pauseBtn.style.cursor = 'not-allowed';
+            
+            studyDurationInput.disabled = false;
+            studySecondsInput.disabled = false;
+            studyDurationInput.value = '';
+            studySecondsInput.value = '';
+            focusGoalInput.disabled = false;
+            focusGoalInput.style.borderBottomColor = 'var(--card-border)';
+            
+            // Start Alarm
+            alarmAudio.play().catch(e => console.error("Alarm play failed", e));
+
+            // Logic for auto-transition (25m -> 5m)
+            if (initialSecondsForSession === 1500) {
+                shouldAutoTransition = true;
+            } else {
+                shouldAutoTransition = false;
+            }
+
+            // Give browser time to render 100% progress before alert
+            setTimeout(() => {
+                let msg = "Session completed! Great focus. Take a short break.";
+                if (shouldAutoTransition) {
+                    msg = "Focus session ended! Starting your 5 minute break now...";
+                }
+                alert(msg);
+                remainingSeconds = 0;
+                initialSecondsForSession = 0;
+                updateProgressBar(); 
+            }, 100);
+        }
+
+        function renderTimerDisplay() {
+            const h = Math.floor(remainingSeconds / 3600);
+            const m = Math.floor((remainingSeconds % 3600) / 60);
+            const s = remainingSeconds % 60;
+            
+            const timeStr = `${formatNumber(h)}:${formatNumber(m)}:${formatNumber(s)}`;
+            timerDisplay.textContent = timeStr;
+            
+            // Update document title
+            if (remainingSeconds > 0) {
+                document.title = `${timeStr} - NightFlow`;
+            } else {
+                document.title = `NightFlow - Night Study Planner`;
+            }
+        }
+
+        function formatNumber(num) {
+            return num.toString().padStart(2, '0');
+        }
+
+        function updateProgressBar(forceComplete = false) {
+            if (initialSecondsForSession <= 0) {
+                progressFill.style.width = '0%';
+                return;
+            }
+            
+            if (forceComplete) {
+                progressFill.style.width = '100%';
+                return;
+            }
+
+            const elapsed = initialSecondsForSession - remainingSeconds;
+            const percentage = (elapsed / initialSecondsForSession) * 100;
+            progressFill.style.width = `${Math.min(100, Math.max(0, percentage))}%`;
+        }
+
+        function renderTotalStudied() {
+            dailyMinutesEl.textContent = dailyStudiedMinutes;
+            
+            // Add a brief scale effect to highlight the change
+            dailyMinutesEl.style.transform = 'scale(1.2)';
+            dailyMinutesEl.style.display = 'inline-block';
+            dailyMinutesEl.style.transition = 'transform 0.3s ease';
+            
+            setTimeout(() => {
+                if(dailyMinutesEl) dailyMinutesEl.style.transform = 'scale(1)';
+            }, 300);
+        }
+
+        function saveProgress() {
+            const today = new Date().toDateString();
+            let stats = JSON.parse(localStorage.getItem('nightFlowStats')) || { history: {} };
+            
+            if (!stats.history) stats.history = {};
+            stats.history[today] = dailyStudiedMinutes;
+            localStorage.setItem('nightFlowStats', JSON.stringify(stats));
+            updateStreak();
+        }
+
+        function loadProgress() {
+            const today = new Date().toDateString();
+            const statsStr = localStorage.getItem('nightFlowStats');
+            
+            dailyStudiedMinutes = 0;
+            
+            if (statsStr) {
+                try {
+                    const stats = JSON.parse(statsStr);
+                    if (stats.history && stats.history[today]) {
+                        dailyStudiedMinutes = stats.history[today];
+                    }
+                } catch (e) {
+                    console.error("Error parsing stats", e);
+                }
+            }
+            renderTotalStudied();
+        }
+
+        // Streak Logic
+        function loadStreak() {
+            const statsStr = localStorage.getItem('nightFlowStats');
+            if (!statsStr) return;
+            try {
+                const stats = JSON.parse(statsStr);
+                const history = stats.history || {};
+                const dates = Object.keys(history).sort((a,b) => new Date(b) - new Date(a));
+                
+                if (dates.length === 0) return;
+                
+                let streak = 0;
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                
+                // Start checking from the most recent date
+                let checkDate = new Date(dates[0]);
+                checkDate.setHours(0,0,0,0);
+                
+                // If the most recent date is not today or yesterday, streak is 0
+                const diffTime = Math.abs(today - checkDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays > 1) {
+                    streak = 0;
+                } else {
+                    // Iterate and count consecutive days
+                    streak = 1;
+                    for (let i = 1; i < dates.length; i++) {
+                        const prevDate = new Date(dates[i]);
+                        prevDate.setHours(0,0,0,0);
+                        const currDate = new Date(dates[i-1]);
+                        currDate.setHours(0,0,0,0);
+                        
+                        const dayDiff = (currDate - prevDate) / (1000 * 60 * 60 * 24);
+                        if (dayDiff === 1) {
+                            streak++;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+                
+                if (streak > 0) {
+                    streakBadge.style.display = 'flex';
+                    streakCountEl.textContent = streak;
+                }
+            } catch (e) { console.error("Streak load fail", e); }
+        }
+
+        function updateStreak() {
+            loadStreak(); // Refresh streak display whenever we save progress
+        }
+
+        // Theme Persistence
+        function applyTheme(primary, accent) {
+            document.documentElement.style.setProperty('--primary', primary);
+            document.documentElement.style.setProperty('--accent', accent);
+            
+            // Derive a darker hover color
+            // For simplicity, we just use the same or slightly different if we had a helper
+            // but for now let's just update the main variables
+        }
+
+        function saveTheme(primary, accent) {
+            localStorage.setItem('nightFlowTheme', JSON.stringify({ primary, accent }));
+        }
+
+        function loadTheme() {
+            const theme = JSON.parse(localStorage.getItem('nightFlowTheme'));
+            if (theme) {
+                applyTheme(theme.primary, theme.accent);
+                // Set active dot
+                themeDots.forEach(dot => {
+                    if (dot.getAttribute('data-primary') === theme.primary) {
+                        themeDots.forEach(d => d.classList.remove('active'));
+                        dot.classList.add('active');
+                    }
+                });
+            }
+        }
+
+        function setRandomQuote(animate = true) {
+            if (animate) {
+                quoteText.classList.add('fade');
+                setTimeout(() => {
+                    const randomIndex = Math.floor(Math.random() * sessionQuotes.length);
+                    quoteText.textContent = `"${sessionQuotes[randomIndex]}"`;
+                    quoteText.classList.remove('fade');
+                }, 500);
+            } else {
+                const randomIndex = Math.floor(Math.random() * sessionQuotes.length);
+                quoteText.textContent = `"${sessionQuotes[randomIndex]}"`;
+            }
+        }
+
+        function handleSoundToggle() {
+            if (isSoundPlaying) {
+                focusAudio.pause();
+                soundIcon.setAttribute('name', 'volume-mute-outline');
+                isSoundPlaying = false;
+            } else {
+                focusAudio.play().then(() => {
+                    soundIcon.setAttribute('name', 'volume-medium-outline');
+                    isSoundPlaying = true;
+                }).catch(err => {
+                    console.error("Audio playback failed:", err);
+                    alert("Click anywhere on the page first to enable audio playing.");
+                });
+            }
+        }
+
+        // Custom Caution Box Modal
+        const customModal = document.getElementById('customModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalBtnConfirm = document.getElementById('modalBtnConfirm');
+        const modalBtnCancel = document.getElementById('modalBtnCancel');
+        const modalIcon = document.getElementById('modalIcon');
+        let modalCallback = null;
+
+        function showModal(message, title = "Notice", type = "alert", callback = null) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modalCallback = callback;
+            
+            if (type === "confirm") {
+                modalBtnCancel.style.display = "block";
+                modalIcon.setAttribute('name', 'warning-outline');
+                modalIcon.style.color = '#ef4444';
+            } else {
+                modalBtnCancel.style.display = "none";
+                modalIcon.setAttribute('name', 'information-circle-outline');
+                modalIcon.style.color = 'var(--primary)';
+            }
+            
+            customModal.classList.add('active');
+        }
+
+        function closeModal() {
+            customModal.classList.remove('active');
+            
+            // Phase 7: Stop alarm
+            if (alarmAudio) {
+                alarmAudio.pause();
+                alarmAudio.currentTime = 0;
+            }
+
+            // Phase 7: Auto-transition logic
+            if (shouldAutoTransition) {
+                shouldAutoTransition = false;
+                studyDurationInput.value = 5;
+                studySecondsInput.value = 0;
+                handleStart();
+            }
+
+            modalCallback = null;
+        }
+
+        modalBtnConfirm.addEventListener('click', () => {
+            if (modalCallback) modalCallback(true);
+            closeModal();
+        });
+
+        modalBtnCancel.addEventListener('click', () => {
+            if (modalCallback) modalCallback(false);
+            closeModal();
+        });
+
+        // Override native window alert
+        window.alert = function(msg) {
+            showModal(msg, "NightFlow Notice", "alert");
+        };
+
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
